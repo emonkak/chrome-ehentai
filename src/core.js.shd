@@ -1,0 +1,120 @@
+## coffee -csb
+# Variables  #{{{1
+
+E_HENTAI_SERVER = 'exhentai.org'
+
+THUMBNAIL_URL = 'http://gt.ehgt.org/'
+CODEGEN_URL = "http://#{E_HENTAI_SERVER}/codegen.php"
+
+
+
+
+# Interface  #{{{1
+
+getQuery = ->
+  query = {}
+  $('#search-form').each (i, x) ->
+    query[x.name] = x.value
+  $('#search-box > label > input').each (i, x) ->
+    query[x.name] = if x.checked then 1 else 0
+  query
+
+parsePageUrl = (url) ->
+  match = url.match /^http:\/\/[^\/]+\/g\/([0-9]+)\/([0-9a-f]+)/
+  if match?
+    gid: match[1]
+    t: match[2]
+
+eHentaiSearch = (query, callback) ->
+  $.extend query,
+    f_apply: 'Apply Filter'
+    inline_set: 'dm_l'
+  $.get "http://#{E_HENTAI_SERVER}/", query, (data) ->
+    callback $(data).find('.gtr0, .gtr1').map ->
+      title:     $(this).find('.it3:last > a').text()
+      user:      $(this).find('.itd:last > div > a').text()
+      data:      $(this).find('.itd:first').text()
+      genre:     $(this).find('.ic').attr('alt')
+      rating:    parseInt $(this).find('.it4 > img').attr('src')
+                                 .match(/(\d+)\.gif$/)[1]
+      url:       $(this).find('.it3 > a:last').attr('href')
+      torrent:   $(this).find('.it3 > a:has(img)').attr('href') or null
+      thumbnail: $(this).find('.it2 > img').attr('src') or
+                 THUMBNAIL_URL + $(this).find('.it2').text().split('~')[1]
+
+eHentaiCodegen = (query, callback) ->
+  $.get "#{CODEGEN_URL}?gid=#{query.gid}&t=#{query.t}&type=html", {}, (data) ->
+    callback $(data).find('textarea').text()
+
+
+
+
+
+# Handlers  #{{{1
+
+handleEntryClick = (e) ->
+  try
+    link = e.target.parentNode
+    title = link.parentNode.nextSibling
+    query = parsePageUrl link.href
+    eHentaiCodegen query, (data) ->
+      index = $('#tabs > ul > li').length
+      tab = $('<div>').addClass('page').attr('id', "tabs-#{index}").append data
+      $('#tabs').append(tab).tabs('add', "#tabs-#{index}", title.innerText)
+  finally
+    e.preventDefault()
+
+handleSearch = ->
+  query = getQuery()
+  eHentaiSearch query, (data) ->
+    index = $('#tabs > ul > li').length
+    tab   = $('<div>').addClass('search').attr('id', "tabs-#{index}")
+
+    for item in data
+      link      = $('<a>').attr('href', item.url)
+      image     = $('<img>').attr('src', item.thumbnail)
+      entry     = $('<div>').addClass('entry')
+      title     = $('<div>').addClass('title').attr('title', item.title)
+      thumbnail = $('<div>').addClass('thumbnail')
+
+      title.append     link.clone().text(item.title)
+      thumbnail.append link.clone().append(image).click(handleEntryClick)
+      tab.append       entry.append(thumbnail).append(title)
+
+    $('#tabs').append(tab).tabs('add', "#tabs-#{index}", query.f_search)
+
+
+
+
+# Main  #{{{1
+
+chrome.cookies.set
+  url: "http://#{E_HENTAI_SERVER}/"
+  domain: E_HENTAI_SERVER
+  path: '/'
+  name: 'ipb_member_id'
+  value: '9999'
+
+$ ->
+  tabs = $('#tabs').tabs
+    add: (e, ui) ->
+      tabs.tabs('select', '#' + ui.panel.id)
+    tabTemplate: '''
+                 <li>
+                 <a href="#{href}">#{label}</a>
+                 <span class="ui-icon ui-icon-close"></span>
+                 </li>
+                 '''
+  $('.ui-icon-close').live 'click', ->
+    index = $('#tabs > ul > li').index(@parentNode)
+    tabs.tabs('remove', index)
+  $('#search-button').click handleSearch
+  $('#search-form').keydown (e) ->
+    handleSearch() if e.keyCode is 13
+
+
+
+
+# __END__  #{{{1
+# vim: filetype=coffee
+# vim: foldmethod=marker

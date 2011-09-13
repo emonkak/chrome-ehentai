@@ -1,0 +1,49 @@
+-## haml -s -f html5
+
+!!!
+
+%html
+  %head
+    %meta{:charset => 'utf-8'}
+    %link{:rel => 'stylesheet', :href => 'style.css'}
+    %link{:rel => 'stylesheet', :href => 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/flick/jquery-ui.css'}
+    %script{:src => 'http://www.google.com/jsapi'}
+    %script google.load('jquery', '1.6');
+    %script google.load('jqueryui', '1.8');
+    %script{:src => 'core.js'}
+    %title E-Hentai
+
+  %body
+    %header
+      %div#search-box
+        %div
+          %input{:type => 'search', :id => 'search-form', :name => 'f_search', :size => 50, :maxlength => 200}
+          %input{:type => 'button', :id => 'search-button', :value => 'Search'}
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_doujinshi'} Doujinshi
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_manga'} Manga
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_artistcg'} Artist CG
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_gamecg'} Game CG
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_western'} Western
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_non-h'} Non-H
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_imageset'} Image-Set
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_cosplay'} Cosplay
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_asianporn'} Asian Porn
+        %label
+          %input{:type => 'checkbox', :checked => 'checked', :name => 'f_misc'} Misc
+    %div#tabs
+      %ul
+
+
+
+
+-# __END__
+-# vim: filetype=haml
